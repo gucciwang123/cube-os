@@ -1,4 +1,4 @@
-#Cube OS
+# Cube OS
 Simple ring zero operation system (maybe not even)
 
 ## Build
