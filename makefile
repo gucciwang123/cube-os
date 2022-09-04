@@ -2,7 +2,7 @@
 all: bin/CubeOS.img
 
 bin/CubeOS.img: build/bootsector.bin build/kernal-entry.bin
-	@mkdir bin
+	@mkdir bin -p
 	@echo Concatenating Files
 	@cat build/bootsector.bin build/kernal-entry.bin > $@
 	@echo Finished Concatenating Files
@@ -37,7 +37,7 @@ $(kernal-entry-asm-object): build/%.o : src/%.asm $(kernal-entry-header)
 $(kernal-entry-c-object): build/%.o : src/%.c $(kernal-entry-header)
 	@echo Building $@
 	@mkdir $(dir $@) -p
-	@gcc -nostdlib -nostartfiles -c $(patsubst build/%.o, src/%.c, $@) -o $@
+	@cc -nostdlib -nostartfiles -c $(patsubst build/%.o, src/%.c, $@) -o $@
 	@echo Built $@
 	@echo
 
@@ -62,7 +62,7 @@ clean:
 	@echo Finished clean
 
 .PHONY: run
-run:
+run: bin/CubeOS.img
 	@echo Running OS
 	@qemu-system-x86_64 -drive file=bin/CubeOS.img,format=raw,index=0,media=disk -m 8192
 	@echo OS stopped
