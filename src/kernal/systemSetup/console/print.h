@@ -34,3 +34,4 @@ int CONSOLE_clearScreen(CONSOLE_COLOR color);
 int CONSOLE_resetScreen(CONSOLE_COLOR color);
 
 int CONSOLE_print(CONSOLE_STRING string, CONSOLE_COLOR color, CONSOLE_BOOL resetString);
+int CONSOLE_hexPrint(uint64_t value, CONSOLE_COLOR color, CONSOLE_BOOL resetString);
