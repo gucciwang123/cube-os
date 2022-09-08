@@ -7,11 +7,7 @@ bin/CubeOS.img: build/bootsector.bin build/kernal-entry.bin
 	@cat build/bootsector.bin build/kernal-entry.bin > $@
 	@echo Finished Concatenating Files
 
-
-bootsector_src := $(shell find "src/boot/bootloader/" -not -path "*/.*" -name "*.asm")
-bootsector = ""
-
-build/bootsector.bin: $(bootsector_src)
+build/bootsector.bin: src/boot/bootloader/boot.asm
 	@echo Building boot sector
 	@mkdir build/ -p
 	@nasm -fbin src/boot/bootloader/boot.asm -o $@
@@ -56,7 +52,7 @@ build/kernal-entry.bin: $(kernal-entry-c-object) $(kernal-entry-asm-object) src/
 	@echo
 
 .PHONY: clean
-clean: 
+clean:
 	@rm -rf bin/*
 	@rm -rf build/*
 	@echo Finished clean
