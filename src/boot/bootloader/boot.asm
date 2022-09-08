@@ -2,8 +2,8 @@
 %ifndef BOOT_ASM
 %define BOOT_ASM
 
-%define STACK_BOTTOM 0x5000
-%define STACK_TOP 0x7dff
+%define STACK_BOTTOM 0x10008
+%define STACK_TOP 0x7FFFF
 
 %define L4_PAGE 0x1000
 %define L3_PAGE 0x2000
@@ -11,6 +11,9 @@
 
 %define L1_PAGE 0x4000
 %define L1_PAGE_END 0x4fff
+
+%define MEMORY_MAP_START 0x5000
+%define MEMORY_MAP_END 0x7BFF
 
 %define NUM_OF_FINAL_BOOT_SECTORS 1
 
@@ -40,9 +43,6 @@ jmp 0x00:.initializer
 	xor dx, dx
 	xor si, si
 	xor di, di
-
-	mov sp, STACK_TOP
-	mov bp, STACK_TOP
 
 	mov es, ax
 	mov ss, ax
@@ -113,6 +113,12 @@ diskerror_message: db "Error reading kernal from disk."
 .end:
 
 transition_message: db "Transitioning to long mode."
+.end:
+
+memory_map_message: db "Error getting memory map"
+.end:
+
+memory_map_out_of_bound_message: db "Not enough memory for memory map"
 .end:
 
 boot_drive: db 0x00
@@ -188,6 +194,36 @@ enable_paging:
 		cmp edi, L1_PAGE_END
 		jbe .map_L1_page
 
+mov di, MEMORY_MAP_START + 2
+mov ebx, 0
+mov es, ebx
+
+get_memory_map:
+	mov eax, 0xE820
+	mov ecx, 24
+	mov edx, 0x534D4150
+	int 0x15
+
+	.error:
+		jnc .no_error
+		d_PRINT memory_map_message, memory_map_message.end
+		jmp finalizer
+	.no_error:
+
+	add di, 24
+
+	.out_of_bound:
+		cmp di, MEMORY_MAP_END
+		jnae .out_of_bound_no_error
+		d_PRINT memory_map_message, memory_map_message.end
+		jmp finalizer
+	.out_of_bound_no_error:
+
+	cmp ebx, 0
+	jne get_memory_map
+
+mov [MEMORY_MAP_START], di
+
 setup_longmode:
 	mov eax, cr4
 	or eax, 1<<5
@@ -214,6 +250,9 @@ setup_longmode:
 
 bits 64
 load_kernal:
+	mov rsp, STACK_TOP
+	mov rbp, STACK_TOP
+
 	mov rsi, KERNAL_READ_LOCATION
 	mov rdi, KERNAL_ENTRY_POINT
 

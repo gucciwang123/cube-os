@@ -2,8 +2,7 @@ global _start
 
 extern entry
 
-section kernal-entry
-section .text
+section .entry
 bits 64
 _start:
 	call entry
